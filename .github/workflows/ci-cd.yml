@@ -10,32 +10,39 @@ on:
 
 jobs:
   build-test-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Явно указываем стабильный Runner
 
     steps:
-    # 1. Проверяем исходный код
-    - name: Checkout source code
-      uses: actions/checkout@v3
+      # 1. Проверяем исходный код
+      - name: Checkout source code
+        uses: actions/checkout@v3
 
-    # 2. Устанавливаем Java
-    - name: Setup Java
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'adopt'
+      # 2. Устанавливаем Java
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
 
-    # 3. Устанавливаем зависимости и собираем проект
-    - name: Install dependencies and build
-      run: mvn clean install
+      # 3. Устанавливаем зависимости и собираем проект
+      - name: Install dependencies and build
+        run: mvn clean install
 
-    # 4. Запускаем юнит-тесты
-    - name: Run tests
-      run: mvn test
+      # 4. Запускаем юнит-тесты
+      - name: Run tests
+        run: mvn test
 
-    # 5. Деплой на Heroku
-    - name: Deploy to Heroku
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-      run: |
-        heroku git:remote -a hidden-hollows-27127
-        git push heroku main
+      # 5. Логин в Heroku
+      - name: Login to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          echo "$HEROKU_API_KEY" | heroku auth:token
+
+      # 6. Подключение Heroku-репозитория
+      - name: Add Heroku remote
+        run: heroku git:remote -a hidden-hollows-27127
+
+      # 7. Деплой на Heroku
+      - name: Deploy to Heroku
+        run: git push heroku main
