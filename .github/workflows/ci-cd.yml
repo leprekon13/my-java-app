@@ -32,14 +32,12 @@ jobs:
       - name: Run tests
         run: mvn test
 
-      # 5. Настройка удаленного репозитория Heroku
+      # 5. Настройка удаленного репозитория Heroku с токеном
       - name: Setup Heroku remote
-        run: git remote add heroku https://git.heroku.com/hidden-hollows-27127.git
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: git remote add heroku https://heroku:${{ secrets.HEROKU_API_KEY }}@git.heroku.com/hidden-hollows-27127.git
 
       # 6. Деплой на Heroku
       - name: Deploy to Heroku
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          echo "$HEROKU_API_KEY" | heroku auth:token
-          git push heroku main
+        run: git push heroku main
